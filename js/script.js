@@ -62,7 +62,8 @@ $(document).ready(function(){
                         moveTo = $(elmIndex).next().offset().top;  //다음섹션의 상단 수직방향 절대 위치값
 
                         $(elm).removeClass("active");
-                        $(elmIndex).next().addClass("active");
+                        $(elmIndex).next().addClass("active").addClass("complete");
+
                         var $cur_index = $(".box.active").index();  //이동시킨 다음 active라는 클래스가 존재한 곳의 인덱스값을 받아온다.
                         console.log($cur_index);
                         $("header li").removeClass("active");
@@ -70,6 +71,7 @@ $(document).ready(function(){
 
                         $("header").removeClass("show");
 
+                        timeout();
                     }
                 }catch(e){  //시도하는 과정에서 문제점이 발생한 곳은 catch문에서 강제로 잡아버린다. (에러 발생에 대한 예외처리)
                     console.log(e);  //타입에러 파트를 에러로 검사창에 노출시키는 것이 아닌 강제로 숨김처리 => 시스템의 에러도 에러로 발생시키는 것을 막는 기능
@@ -82,7 +84,8 @@ $(document).ready(function(){
                         moveTo = $(elmIndex).prev().offset().top;  //이전 섹션의 상단 수직방향 절대 위치값
 
                         $(elm).removeClass("active");
-                        $(elmIndex).prev().addClass("active");
+                        $(elmIndex).prev().addClass("active").addClass("complete");
+
                         var $cur_index = $(".box.active").index();
                         console.log($cur_index);
                         $("header li").removeClass("active");
@@ -90,12 +93,23 @@ $(document).ready(function(){
 
                         $("header").addClass("show");
 
+                        //timeout();
+
                     }
                 }catch(e){  //시도하는 과정에서 문제점이 발생한 곳은 catch문에서 강제로 잡아버린다. (에러 발생에 대한 예외처리)
                     console.log(e);  //타입에러 파트를 에러로 검사창에 노출시키는 것이 아닌 강제로 숨김처리 => 시스템의 에러도 에러로 발생시키는 것을 막는 기능
                 }
             }
-            $("html, body").stop().animate({scrollTop : moveTo + "px"}, 500);
+            var timeout = setTimeout(function(){
+                var $complete = $(".box.active").hasClass("complete");
+                if($complete == true){
+                    $(".box.active").removeClass("complete");
+                }else{
+                    $("html, body").animate({scrollTop : moveTo + "px"}, 200);
+                }
+            },200);
+
+            
         });
     });
 
@@ -253,13 +267,40 @@ $(document).ready(function(){
         $t_end = event.changedTouches[0].pageY;
 
         touchmove();
-    })
+    });
 
 
+    //마우스 이벤트 : mousedown, mouseup
+
+    var $m_down;
+    var $m_up;
+    var $m_move;
 
 
+    function mousemove(evt){
+        $m_move = $m_down - $m_up;
+        //$m_move라는 결과값이 양수라면 마우스 클릭한 상태에서 상단으로 드래그를 시도한 상황
+        if($m_move > 20){
+            next(evt);
+        }else if($m_move < -20){
+            prev(evt);
+        }
+    }
 
 
+    //마우스의 클릭 버튼을 누른 상탱
+    $(elm).on("mousedown", function(evt){
+        console.log("마우스다운");
+        console.log(evt.pageY);
+        $m_down = evt.pageY;
+    });
 
+    //마우스의 클릭 벝느을 뗀 상태
+    $(elm).on("mouseup", function(evt){
+        console.log(evt.pageY);
+        $m_up = evt.pageY;
+
+        mousemove();
+    });
 
 });
